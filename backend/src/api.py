@@ -1,7 +1,7 @@
 import asyncio
 from fastapi import APIRouter
 from typing import Dict
-from fastapi.responses import EventSourceResponse
+from fastapi.responses import StreamingResponse
 
 router = APIRouter()
 
@@ -34,4 +34,4 @@ async def event_stream():
 
 @router.get("/chat-stream")
 async def chat_stream():
-    return EventSourceResponse(event_stream())
+    return StreamingResponse(event_stream())
