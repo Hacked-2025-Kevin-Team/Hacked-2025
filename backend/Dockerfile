@@ -10,7 +10,8 @@ RUN pip install --no-cache-dir poetry
 COPY pyproject.toml poetry.lock ./
 
 # Install dependencies with Poetry
-RUN poetry install
+RUN poetry install --no-root
+
 
 # Copy the source code
 COPY src ./src
