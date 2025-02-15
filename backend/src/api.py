@@ -4,6 +4,8 @@ from typing import List, Optional, Dict
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+import llm.llm
+
 router = APIRouter()
 
 
@@ -99,4 +101,6 @@ async def event_stream():
 
 @router.get("/chat-stream")
 async def chat_stream():
-    return StreamingResponse(event_stream())
+    return StreamingResponse(
+        llm.llm.LLM().stream_graph_updates("What do you know about LangGraph?")
+    )
