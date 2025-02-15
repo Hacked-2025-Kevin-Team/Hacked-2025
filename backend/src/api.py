@@ -94,12 +94,6 @@ async def suggested() -> SuggestedResponse:
     )
 
 
-async def event_stream():
-    for i in range(10):  # Simulating a stream of responses
-        await asyncio.sleep(1)  # Simulate delay
-        yield f"data: Response {i}\n\n"
-
-
 @router.get("/chat-stream")
 async def chat_stream(usr_input: str):  # Add app: FastAPI
     """
