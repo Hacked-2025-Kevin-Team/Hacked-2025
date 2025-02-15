@@ -10,8 +10,8 @@ RUN apk add --no-cache python3 py3-setuptools make g++
 # Ensure python points to python3
 RUN ln -sf /usr/bin/python3 /usr/bin/python
 
-# Copy the package.json, bun.lock (lockfile), and the rest of the application code
 COPY package.json bun.lock ./
+
 COPY . .
 
 # Clean up temporary files and force bun install without cache
