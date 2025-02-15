@@ -12,9 +12,9 @@ async def read_root() -> Dict[str, str]:
     return {"message": "Welcome to the Hacked 2025 API!"}
 
 
-@router.get("/hello/{name}")
-async def greet_user(name: str) -> Dict[str, str]:
+@router.get("/query")
+async def read_query(query: str) -> Dict[str, str]:
     """
-    Greets a user by their name
+    Endpoint that returns the query parameter
     """
-    return {"message": f"Hello, {name}! Welcome to Hacked 2025"}
+    return {"query": query}

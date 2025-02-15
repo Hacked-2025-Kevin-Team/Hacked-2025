@@ -2,10 +2,9 @@
 name = "src"
 version = "0.1.0"
 description = "Hackathon Project"
-authors = [
-    {name = "Logan",email = "lgntravis@gmail.com"}
-]
-requires-python = "^3.11"
+authors = [{ name = "Logan", email = "lgntravis@gmail.com" }]
+requires-python = ">=3.11,<4.0"
+
 dependencies = [
     "fastapi (>=0.115.8,<0.116.0)",
     "uvicorn (>=0.34.0,<0.35.0)",
@@ -13,7 +12,7 @@ dependencies = [
     "openai (>=1.63.0,<2.0.0)",
     "langgraph (>=0.2.73,<0.3.0)",
     "langsmith (>=0.3.8,<0.4.0)",
-    "langchain-openai (>=0.3.6,<0.4.0)"
+    "langchain-openai (>=0.3.6,<0.4.0)",
 ]
 
 
