@@ -8,7 +8,8 @@ from pydantic import BaseModel
 
 router = APIRouter()
 
-
+from llm.llm import LLM
+llm_instance = LLM()
 # Define Pydantic models
 class Paper(BaseModel):
     summary: str
@@ -100,9 +101,8 @@ async def event_stream():
 
 
 @router.get("/chat-stream")
-async def chat_stream(usr_input: str, app: FastAPI):  # Add app: FastAPI
+async def chat_stream(usr_input: str):  # Add app: FastAPI
     """
     Streams chat responses using the shared LLM instance.
     """
-    llm_instance = app.state.llm_instance  # Access the LLM instance
     return StreamingResponse(llm_instance.stream_graph_updates(usr_input))
