@@ -100,7 +100,5 @@ async def event_stream():
 
 
 @router.get("/chat-stream")
-async def chat_stream():
-    return StreamingResponse(
-        llm.llm.LLM().stream_graph_updates("What do you know about LangGraph?")
-    )
+async def chat_stream(usr_input: str):
+    return StreamingResponse(llm.llm.LLM().stream_graph_updates(usr_input))
