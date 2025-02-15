@@ -1,25 +1,19 @@
-FROM python:3.11-slim
+FROM python:3.11
 
-# Set environment variables
-ENV POETRY_VERSION=1.8.2 \
-    PYTHONUNBUFFERED=1 \
-    POETRY_VIRTUALENVS_IN_PROJECT=true \
-    POETRY_NO_INTERACTION=1
-
-# Install Poetry
-RUN pip install --no-cache-dir poetry==${POETRY_VERSION}
-
-# Set working directory
+# Set the working directory
 WORKDIR /app
 
-# Copy pyproject.toml and poetry.lock first (for better caching)
+# Install Poetry
+RUN pip install --no-cache-dir poetry
+
+# Copy project files
 COPY pyproject.toml poetry.lock ./
 
-# Install dependencies
-RUN poetry install
+# Install dependencies with Poetry
+RUN poetry install --no-root --no-dev
 
 # Copy the source code
-COPY src/ src/
+COPY src ./src
 
-# Run the application
+# Set the entrypoint to run main.py
 CMD ["poetry", "run", "python", "src/main.py"]

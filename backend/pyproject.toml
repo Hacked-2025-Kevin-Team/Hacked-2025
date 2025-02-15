@@ -2,14 +2,9 @@
 name = "src"
 version = "0.1.0"
 description = "Hackathon Project"
-authors = [
-    {name = "Logan",email = "lgntravis@gmail.com"}
-]
+authors = [{ name = "Logan", email = "lgntravis@gmail.com" }]
 requires-python = ">=3.11"
-dependencies = [
-    "fastapi (>=0.115.8,<0.116.0)",
-    "uvicorn (>=0.34.0,<0.35.0)"
-]
+dependencies = ["fastapi (>=0.115.8,<0.116.0)", "uvicorn (>=0.34.0,<0.35.0)"]
 
 
 [build-system]
