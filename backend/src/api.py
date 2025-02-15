@@ -1,10 +1,10 @@
 import asyncio
-from fastapi import APIRouter
+from fastapi import APIRouter, FastAPI
 from typing import List, Optional, Dict
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-import llm.llm
+# No need to import llm.llm here
 
 router = APIRouter()
 
@@ -100,5 +100,9 @@ async def event_stream():
 
 
 @router.get("/chat-stream")
-async def chat_stream(usr_input: str):
-    return StreamingResponse(llm.llm.LLM().stream_graph_updates(usr_input))
+async def chat_stream(usr_input: str, app: FastAPI):  # Add app: FastAPI
+    """
+    Streams chat responses using the shared LLM instance.
+    """
+    llm_instance = app.state.llm_instance  # Access the LLM instance
+    return StreamingResponse(llm_instance.stream_graph_updates(usr_input))
