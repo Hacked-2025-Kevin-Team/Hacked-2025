@@ -8,7 +8,7 @@ app = FastAPI()
 async def read_root() -> Dict[str, str]:
     """
     Root endpoint that returns a welcome message
-    """
+    """ 
     return {"message": "Welcome to the Hacked 2025 API!"}
 
 
