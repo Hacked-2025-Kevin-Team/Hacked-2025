@@ -17,9 +17,7 @@ export default function Home() {
 
     try {
       const res = await fetch(
-        `https://hacked-2025-backend-production.up.railway.app/chat-stream?usr_input=${encodeURIComponent(
-          input,
-        )}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/chat-stream?usr_input=${encodeURIComponent(input)}`,
       );
 
       if (!res.ok) {
