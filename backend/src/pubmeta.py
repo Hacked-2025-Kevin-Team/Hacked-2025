@@ -1,8 +1,9 @@
+import os
 from metapub import PubMedFetcher
-fetch = PubMedFetcher()
+api_key = os.getenv("NCBI_API_KEY")
+fetch = PubMedFetcher(api_key=api_key)
+
 def fetch_medical_documments(query):
     results = fetch.pmids_for_query(query)
     articles = []
-    for result in results:
-        articles.append(fetch.article_by_pmid(result))
-    print(articles)
+    
