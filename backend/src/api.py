@@ -103,3 +103,11 @@ async def chat_stream(usr_input: str):  # Add app: FastAPI
     Streams chat responses using the shared LLM instance.
     """
     return StreamingResponse(llm_instance.stream_graph_updates(usr_input))
+
+
+@router.get("/health")
+async def health_check() -> Dict[str, str]:
+    """
+    Health check endpoint
+    """
+    return {"status": "ok"}
