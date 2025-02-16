@@ -11,10 +11,15 @@ import { BookmarkPlus, AlertTriangle } from "lucide-react";
 export default function Home() {
   const [input, setInput] = useState(""); // State to store the user's input
   const [response, setResponse] = useState(""); // State to store the streamed response
-  const [jsonCards, setJsonCards] = useState([]); // State to store JSON cards
+  interface CardData {
+    url: string;
+    content: string;
+  }
+
+  const [jsonCards, setJsonCards] = useState<CardData[]>([]); // State to store JSON cards
   const [isLoading, setIsLoading] = useState(false); // State to handle loading state
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent the default form submission
     setIsLoading(true); // Set loading state to true
     setResponse(""); // Clear previous response
