@@ -3,8 +3,6 @@ from fastapi import APIRouter, FastAPI
 from typing import List, Optional, Dict
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-import fetch_papers
-from fetch_papers import ResearchPaper
 
 # No need to import llm.llm here
 
@@ -37,13 +35,19 @@ async def read_root() -> Dict[str, str]:
     return {"message": "Welcome to the Hacked 2025 API!"}
 
 
-@router.get("/summarize", response_model=Paper)
-async def search(query: str) -> Paper:
+@router.get("/summarize", response_model=Dict[str, str])
+async def search(query: str) -> Dict[str, str]:
     """
     Summarizes paper results based on the query
     """
-    paper = ResearchPaper(query)
-    return Paper(paper.summary, paper.title, paper.url, paper.tags, paper.insights)
+    return {
+        "summary": "This is a summary of the search result",
+        "title": "Search Result Title",
+        "url": "https://example.com/search-result",
+        "tags": ["tag1", "tag2", "tag3"],
+        "insights": ["insight1", "insight2", "insight3"],
+        "warning": None,
+    }
 
 
 @router.get("/suggested", response_model=SuggestedResponse)
