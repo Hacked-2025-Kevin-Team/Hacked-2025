@@ -11,19 +11,12 @@ import { BookmarkPlus, AlertTriangle } from "lucide-react";
 export default function Home() {
   const [input, setInput] = useState(""); // State to store the user's input
   const [response, setResponse] = useState(""); // State to store the streamed response
-  interface CardData {
-    url: string;
-    content: string;
-  }
-
-  const [jsonCards, setJsonCards] = useState<CardData[]>([]); // State to store JSON cards
   const [isLoading, setIsLoading] = useState(false); // State to handle loading state
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault(); // Prevent the default form submission
     setIsLoading(true); // Set loading state to true
     setResponse(""); // Clear previous response
-    setJsonCards([]); // Clear previous JSON cards
 
     try {
       // Fetch the streamed response from the API route
@@ -45,26 +38,7 @@ export default function Home() {
         if (done) break; // Exit the loop if the stream is complete
 
         const chunk = decoder.decode(value, { stream: true }); // Decode the chunk
-
-        // Extract JSON objects from the chunk
-        const jsonRegex = /\[.*?\]/gs;
-        const jsonMatches = chunk.match(jsonRegex);
-        if (jsonMatches) {
-          jsonMatches.forEach((match) => {
-            try {
-              const jsonData = JSON.parse(match);
-              setJsonCards((prev) => [...prev, ...jsonData]);
-            } catch (error) {
-              console.error("Error parsing JSON:", error);
-            }
-          });
-        }
-
-        // Remove JSON content from the chunk before appending to the response
-        const filteredChunk = chunk.replace(jsonRegex, "").trim();
-        if (filteredChunk) {
-          setResponse((prev) => prev + filteredChunk);
-        }
+        setResponse((prev) => prev + chunk); // Append the chunk to the response
       }
     } catch (error) {
       console.error("Error fetching stream:", error);
@@ -107,27 +81,7 @@ export default function Home() {
                   Popular topics: Physics, Biology, Computer Science, Psychology
                 </p>
               </div>
-              {/* Display the JSON cards */}
-              {jsonCards.length > 0 && (
-                <div className="mt-4 w-full max-w-2xl">
-                  {jsonCards.map((card, index) => (
-                    <Card key={index} className="mb-4">
-                      <CardHeader>
-                        <CardTitle>{card.url}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{card.content}</p>
-                      </CardContent>
-                      <CardFooter>
-                        <Button variant="outline" asChild>
-                          <Link href={card.url}>Read More</Link>
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              )}
-              {/* Display the streamed response (without JSON) */}
+              {/* Display the streamed response */}
               {response && (
                 <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg w-full max-w-2xl">
                   <pre className="whitespace-pre-wrap">{response}</pre>
