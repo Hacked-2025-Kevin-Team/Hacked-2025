@@ -78,7 +78,7 @@ class LLM:
             {"messages": [{"role": "user", "content": user_input}]}
         ):
             for value in event.values():
-                yield "Assistant:" + value["messages"][-1].content
+                yield value["messages"][-1].content
 
     def route_tools(self, state: State):
         if isinstance(state, list):
