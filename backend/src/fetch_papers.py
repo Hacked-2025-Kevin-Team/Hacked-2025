@@ -68,7 +68,7 @@ class ResearchPaper:
             return client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Write a summary for this paper. Do not use math text. Return a json with 'summary' and 'tags', make the tags fairly broad like 'math', 'social issues', or 'physics' in a space seperated string" },
+                {"role": "system", "content": "Write a fairly long summary for this paper, 1 or 2 paragraphs. Do not use math text. Return a json with 'summary', 'insights', and 'tags'. make the tags fairly broad like 'math', 'social issues', or 'physics' in a space seperated string. Make the insights short, 1 or 2 sentences, and in an array of stings" },
                 {
                     "role": "user",
                     "content": paper
@@ -86,16 +86,17 @@ class ResearchPaper:
         self.json_info = json.loads(self.query_gpt(self.thing["results"][0]["fullText"]).choices[0].message.content)
         self.message = self.json_info["summary"]
         self.tags = self.json_info["tags"].split(" ")
+        self.insights = self.json_info["insights"]
         
-
-
 
 # print(e["results"][0]["title"])
 
 # print("title: " summary.title.strip('\n'))
 # print(summary.message)
 # print(summary.message)
-summary = ResearchPaper("health")
-# print(json.dumps(summary.thing, indent=4))
-print(summary.message)
-print(summary.tags)
+# summary = ResearchPaper("health")
+
+# print(json.dumps(summary.json_info, indent=4))
+# print(summary.message)
+# print(summary.tags)
+# print(summary.insights)
