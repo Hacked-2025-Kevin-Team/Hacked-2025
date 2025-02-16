@@ -91,7 +91,7 @@ export default function Home() {
           </div>
         </section>
         <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800">
-          <div className="container px-4 md:px-6">
+          <div className="container px-4 md:px-6 items-center">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-center mb-8">Latest Research Papers</h2>
             <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
               <Card>

@@ -9,8 +9,8 @@ import Link from "next/link";
 import { BookOpen } from "lucide-react";
 
 const navigation = [
-  { name: "Home", href: "#" },
-  { name: "Topics", href: "#" },
+  { name: "Home", href: "/" },
+  { name: "Topics", href: "/Topics" },
   { name: "Saved Papers", href: "#" },
   { name: "About", href: "#" },
 ];

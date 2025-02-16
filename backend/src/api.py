@@ -4,12 +4,17 @@ from typing import List, Optional, Dict
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import fetch_papers
+from fetch_papers import ResearchPaper
+
 # No need to import llm.llm here
 
 router = APIRouter()
 
 from llm.llm import LLM
+
 llm_instance = LLM()
+
+
 # Define Pydantic models
 class Paper(BaseModel):
     summary: str
@@ -38,7 +43,7 @@ async def search(query: str) -> Paper:
     Summarizes paper results based on the query
     """
     paper = ResearchPaper(query)
-    return Paper(paper.summary,paper.title,paper.url,paper.tags,paper.insights)
+    return Paper(paper.summary, paper.title, paper.url, paper.tags, paper.insights)
 
 
 @router.get("/suggested", response_model=SuggestedResponse)
