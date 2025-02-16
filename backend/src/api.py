@@ -3,6 +3,7 @@ from fastapi import APIRouter, FastAPI
 from typing import List, Optional, Dict
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from fastapi.responses import JSONResponse
 
 # No need to import llm.llm here
 
@@ -110,4 +111,4 @@ async def health_check() -> Dict[str, str]:
     """
     Health check endpoint
     """
-    return {"status": "ok"}
+    return JSONResponse(content={"status": "ok"}, status_code=200)
