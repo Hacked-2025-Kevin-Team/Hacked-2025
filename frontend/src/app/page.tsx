@@ -1,14 +1,55 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { BookmarkPlus, AlertTriangle } from "lucide-react"
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { BookmarkPlus, AlertTriangle } from "lucide-react";
 
 export default function Home() {
+  const [input, setInput] = useState(""); // State to store the user's input
+  const [response, setResponse] = useState(""); // State to store the streamed response
+  const [isLoading, setIsLoading] = useState(false); // State to handle loading state
+
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault(); // Prevent the default form submission
+    setIsLoading(true); // Set loading state to true
+    setResponse(""); // Clear previous response
+
+    try {
+      // Fetch the streamed response from the API route
+      const res = await fetch(`https://hacked-2025-backend-production.up.railway.app/chat-stream?usr_input=${encodeURIComponent(input)}`);
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      if (!res.body) {
+        throw new Error("Response body is null");
+      }
+      const reader = res.body.getReader(); // Get the stream reader
+      const decoder = new TextDecoder(); // Create a text decoder
+
+      // Read the streamed data
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break; // Exit the loop if the stream is complete
+
+        const chunk = decoder.decode(value, { stream: true }); // Decode the chunk
+        setResponse((prev) => prev + chunk); // Append the chunk to the response
+      }
+    } catch (error) {
+      console.error("Error fetching stream:", error);
+      setResponse("An error occurred while fetching the stream.");
+    } finally {
+      setIsLoading(false); // Set loading state to false
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
-      
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 flex flex-col items-center">
           <div className="container px-4 md:px-6">
@@ -23,14 +64,29 @@ export default function Home() {
                 </p>
               </div>
               <div className="w-full max-w-sm space-y-2">
-                <form className="flex space-x-2">
-                  <Input className="max-w-lg flex-1" placeholder="Enter a research topic" type="text" />
-                  <Button type="submit">Search</Button>
+                <form className="flex space-x-2" onSubmit={handleSubmit}>
+                  <Input
+                    className="max-w-lg flex-1"
+                    placeholder="Enter a research topic"
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    disabled={isLoading}
+                  />
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? "Searching..." : "Search"}
+                  </Button>
                 </form>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Popular topics: Physics, Biology, Computer Science, Psychology
                 </p>
               </div>
+              {/* Display the streamed response */}
+              {response && (
+                <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg w-full max-w-2xl">
+                  <pre className="whitespace-pre-wrap">{response}</pre>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -140,6 +196,5 @@ export default function Home() {
         </nav>
       </footer>
     </div>
-  )
+  );
 }
-
