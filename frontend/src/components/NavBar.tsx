@@ -26,7 +26,7 @@ export default function Navbar() {
               <BookOpen className="h-6 w-6" />
               <span className="ml-2 text-lg font-bold">ResearchPulse</span>
             </Link>
-            
+
             {/* Desktop Navigation */}
             <div className="hidden sm:flex sm:gap-6">
               {navigation.map((item) => (
