@@ -5,4 +5,4 @@ def fetch_medical_documments(query):
     articles = []
     for result in results:
         articles.append(fetch.article_by_pmid(result))
-    print(results)
+    print(articles)
