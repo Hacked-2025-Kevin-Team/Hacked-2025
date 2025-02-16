@@ -14,6 +14,8 @@ ENV POETRY_VIRTUALENVS_IN_PROJECT=false
 # Install dependencies with Poetry 
 RUN poetry install --no-root 
 
+ENV NCBI_API_KEY=5e477ca31aafaa57067b087c9805d8204508
+
 # Copy the source code
 COPY src ./src
 
