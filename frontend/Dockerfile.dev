@@ -1,0 +1,17 @@
+FROM oven/bun:alpine
+
+WORKDIR /app
+
+# Install OS dependencies for file watching
+RUN apk add --no-cache python3 make g++
+
+COPY package.json bun.lock* ./
+
+# Install dependencies (preserve Bun's speed)
+RUN bun install --no-cache
+
+# Copy source code (will be overridden by compose volume)
+COPY . .
+
+# Enable Turbopack dev server with polling
+CMD ["bun", "run", "dev"]
