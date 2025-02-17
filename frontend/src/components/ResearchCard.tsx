@@ -21,28 +21,31 @@ export const ResearchCard = ({
   url: string;
 }) => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <div className="flex flex-wrap gap-1 mt-2">
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader className="space-y-2">
+        <CardTitle className="text-lg line-clamp-2">{title}</CardTitle>
+        <div className="flex flex-wrap gap-1">
           {badges.map((badge, index) => (
-            <Badge key={index}>{badge}</Badge>
+            <Badge key={index} className="text-xs">
+              {badge}
+            </Badge>
           ))}
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
           {description}
         </p>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between">
         <Button
           variant="outline"
+          className="w-full sm:w-auto text-sm"
           onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
         >
           Read Full Paper
         </Button>
-        <Button variant="ghost">
+        <Button variant="ghost" className="w-full sm:w-auto text-sm">
           <BookmarkPlus className="mr-2 h-4 w-4" />
           Save for Later
         </Button>
