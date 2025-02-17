@@ -16,7 +16,7 @@ def fetch_latest_websites(og_website):
     latest_section = soup.find(class_ = "latest-section")
     latest_sites = latest_section.find(class_ = "items-list")
 
-
+    
     latest_paper_sites = []
     for element in latest_sites.find_all("a"):
 
@@ -66,12 +66,59 @@ def fetch_article_pmid(latest_paper_sites):
     return latest_paper_sites
 
 
+def get_article_data(n):
+    n = min(n, 250)
+    articles = fetch.pmids_for_query('("2025/02/02"[dp] : "2025/02/16"[dp])')[:n]
 
-og_website = "https://pubmed.ncbi.nlm.nih.gov"
+    papers = []
+    for pmid in articles:
+        article = fetch.article_by_pmid(pmid)
+        authors = ", ".join(article.authors)
+        dic = {
+                "id": pmid,
+                "title":article.title,
+                "abstract": article.abstract,
+                "authors": article.authors,
+                "publicationDate": f"{article.year}",
+                "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
+            }
+        papers.append(dic)
+
+    return papers
 
 
-sites = fetch_latest_websites(og_website)
-fetch_article_pmid(sites)
+
+#I have a set of abstracts 
+
+
+#I want to give them to the llm 
+
+#I want the llm to output it in a given format. 
+
+
+#How the fuck do i do this. 
+
+
+
+
+"""{
+    name: "Machine Learning in Healthcare",
+    papers: [
+    {
+        id: "1",
+        title: "Deep Learning for Medical Image Analysis",
+        abstract:
+        "This paper explores the application of deep learning techniques in medical image analysis. We discuss various architectures and their effectiveness in tasks such as tumor detection and classification of radiographic images.",
+        authors: ["John Doe", "Jane Smith"],
+        publicationDate: "2023-05-15",
+        url: "https://example.com/paper1",
+    }]
+}"""
+#We are going to fetch title
+#We are going to fetch abstract from the article 
+#We are going to fetch author names 
+#We are going to fecth URL from paper 
+#We are going to fetch categories by giving it the abstract of each paper. 
 
 
 
