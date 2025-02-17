@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://hacked-2025-backend-production.up.railway.app"],  
+    allow_origins=["http://localhost:3000", "https://hacked-2025-backend-production.up.railway.app", "https://hacked-2025-production.up.railway.app"],  
     allow_credentials=True,
     allow_methods=["*"],  
     allow_headers=["*"],  
