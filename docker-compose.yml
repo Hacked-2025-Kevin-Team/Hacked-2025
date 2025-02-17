@@ -4,67 +4,27 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.dev # Use dev-specific Dockerfile
+      dockerfile: Dockerfile.dev 
     ports:
       - "3000:3000"
     environment:
       - PORT=3000
-      - CHOKIDAR_USEPOLLING=true # Required for file watching in Docker
+      - CHOKIDAR_USEPOLLING=true 
       - WATCHPACK_POLLING=true
     volumes:
       - ./frontend:/app
-      - /app/node_modules # Keep container's node_modules
-      - /app/.next # Persist Turbopack cache
+      - /app/node_modules 
+      - /app/.next 
     depends_on:
       - backend
-    networks:
-      - radio-network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "8000:8000" 
     volumes:
       - ./backend:/app
     environment:
       - PYTHONUNBUFFERED=1
-    depends_on:
-      - icecast
-      - liquidsoap
-    networks:
-      - radio-network
-
-  icecast:
-    image: vimagick/icecast
-    user: "1000:1000"  # Replace with a non-root UID:GID
-    ports:
-      - "8002:8002"  # External:Internal
-    environment:
-      - ICECAST_SOURCE_PASSWORD=MySecurePass123
-      - ICECAST_ADMIN_PASSWORD=adminpass
-      - ICECAST_RELAY_PASSWORD=relaypass
-      - ICECAST_PASSWORD=MySecurePass123
-    volumes:
-      - ./backend/icecast/config/icecast.xml:/etc/icecast.xml  # Mount custom config
-      - ./backend/icecast/logs:/logs
-    restart: always
-    networks:
-      - radio-network
-
-  liquidsoap:
-    image: savonet/liquidsoap:v2.3.1
-    container_name: liquidsoap
-    depends_on:
-      - icecast
-    restart: always
-    volumes:
-      - ./backend/src:/app
-    command: ["liquidsoap", "/app/radio.liq"]
-    networks:
-      - radio-network
-
-networks:
-  radio-network:
-    driver: bridge
