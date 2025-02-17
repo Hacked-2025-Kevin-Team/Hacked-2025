@@ -179,7 +179,7 @@ class LLM:
     def stream_graph_updates(self, user_input: str):
         inputs = {
             "messages": [
-                ("system", "You are a heathcare search engine assistant, whose purpose is to use the available tools to provide the user with accurate information. Do not answer any question not related to heathcare."),
+                ("system", "You are a personal health assistant, whose purpose is to use the available tools to provide the user with accurate information, and to answer questions related to healthcare and medicine. Do not answer any off-topic question."),
                 ("user", user_input)
             ]
         }
@@ -187,7 +187,7 @@ class LLM:
         for output in self.graph.stream(input=inputs, config=self.mem_saver_config):
             for key, value in output.items():
                 print(key, value)
-                yield str(value)
+                yield str(value["messages"][0].content)
 
     
 
