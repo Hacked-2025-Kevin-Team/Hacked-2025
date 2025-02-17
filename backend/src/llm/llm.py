@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langchain_core.messages import ToolMessage
 
+#from langchain.agents import create_react_agent
 from langchain_openai import ChatOpenAI
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.checkpoint.memory import MemorySaver
@@ -69,17 +70,20 @@ class LLM:
         self.graph_builder.add_edge("tools", "chatbot")
         self.mem_saver = MemorySaver()
         self.graph = self.graph_builder.compile(checkpointer=self.mem_saver)
-        # self.graph.get_graph().draw_mermaid_png(output_file_path="test.png")
+        self.mem_saver_config = {"configurable": {"thread_id": "def234"}}
+        
 
     def chatbot(self, state: State) -> State:
         return {"messages": [self.llm_with_tools.invoke(state["messages"])]}
 
     def stream_graph_updates(self, user_input: str):
         for event in self.graph.stream(
-            {"messages": [{"role": "user", "content": user_input}]}
+            {"messages": [{"role": "user", "content": user_input}]},
+            config=self.mem_saver_config,
         ):
             
             for value in event.values():
+                #print(value["messages"][-1].content)
                 yield value["messages"][-1].content
 
     def route_tools(self, state: State):
