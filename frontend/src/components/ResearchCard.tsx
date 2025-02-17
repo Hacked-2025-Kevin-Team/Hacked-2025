@@ -15,12 +15,14 @@ export const ResearchCard = ({
   description,
   insights,
   caution,
+  url,
 }: {
   title: string;
   badges: string[];
   description: string;
   insights: string[];
   caution?: string;
+  url: string;
 }) => {
   return (
     <Card>
@@ -52,7 +54,12 @@ export const ResearchCard = ({
         </div>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline">Read Full Paper</Button>
+        <Button
+          variant="outline"
+          onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+        >
+          Read Full Paper
+        </Button>
         <Button variant="ghost">
           <BookmarkPlus className="mr-2 h-4 w-4" />
           Save for Later

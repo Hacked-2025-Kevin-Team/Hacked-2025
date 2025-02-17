@@ -163,6 +163,7 @@ export default function Home() {
                       description={item.description}
                       insights={["Click on Read Full Paper to explore further."]}
                       caution={""}
+                      url={item.url}
                     />
                   ))}
                 </div>
