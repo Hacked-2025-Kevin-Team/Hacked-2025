@@ -18,8 +18,8 @@ vectorstore = Chroma(
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
 )
 @tool()
-def fetch_pm_document_url(query):
-    """Fetch a list of reliable medical research articles based on keywords from the user's question, then store in a vector database for later retrieval."""
+def search_for_pubmedm_articles(query):
+    """Search for related articles on PubMed."""
     api_key = os.getenv("NCBI_API_KEY")
     fetcher = PubMedFetcher()
     

@@ -23,7 +23,7 @@ from langgraph.prebuilt import create_react_agent
 from pydantic import BaseModel, Field
 
 
-from .pm_tools import fetch_pm_document_url, vectorstore
+from .pm_tools import search_for_pubmedm_articles, vectorstore
 # Load environment variables
 dotenv.load_dotenv()
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
@@ -39,13 +39,13 @@ class LLM:
         self.graph_builder = StateGraph(State)
 
         #tool = TavilySearchResults(max_results=2)
-        self.tools = [fetch_pm_document_url]
+        self.tools = [search_for_pubmedm_articles]
         #self.tools=[]
         retriever = vectorstore.as_retriever()
         retriever_tool = create_retriever_tool(
                             retriever,
-                            "retrieve_medical_research_articles",
-                            "Search and return accurate information from the medical research articles.",
+                            "retrieve_articles",
+                            "Search and return accurate information about the medical research articles.",
                         )
         self.tools.append(
             retriever_tool
@@ -53,7 +53,7 @@ class LLM:
         
         self.workflow = StateGraph(State)
         self.workflow.add_node("agent", self.agent)
-        search_or_retreieve = ToolNode([fetch_pm_document_url, retriever_tool])
+        search_or_retreieve = ToolNode([search_for_pubmedm_articles, retriever_tool])
         
         
         #Search then retrieve
@@ -137,8 +137,13 @@ class LLM:
 
         print("---TRANSFORM QUERY---")
         messages = state["messages"]
-        question = messages[0].content
-
+        question = None
+        for m in messages:
+            if type(m) is HumanMessage:
+                question = m.content
+        if question is None:
+            question = messages[0].content
+        print(question)
         msg = [
             HumanMessage(
                 content=f""" \n 
@@ -179,7 +184,7 @@ class LLM:
     def stream_graph_updates(self, user_input: str):
         inputs = {
             "messages": [
-                ("system", "You are a personal health assistant, whose purpose is to use the available tools to provide the user with accurate information, and to answer questions related to healthcare and medicine. Do not answer any off-topic question."),
+                ("system", "You are a personal health assistant, whose purpose is to use the available tools to provide the user with accurate information, and to answer questions related to healthcare and medicine. Use the search tool to find related articles. Do not answer any off-topic question."),
                 ("user", user_input)
             ]
         }
