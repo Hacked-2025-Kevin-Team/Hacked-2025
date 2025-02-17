@@ -11,8 +11,6 @@ import { BookOpen } from "lucide-react";
 const navigation = [
   { name: "Home", href: "/" },
   { name: "Topics", href: "/Topics" },
-  { name: "Saved Papers", href: "#" },
-  { name: "About", href: "#" },
   { name: "News", href: "/news" },
 
   {name: "Article Radio", href:"/Radio"}
