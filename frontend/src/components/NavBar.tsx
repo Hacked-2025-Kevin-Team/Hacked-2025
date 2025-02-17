@@ -25,7 +25,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link className="flex items-center justify-center" href="#">
               <BookOpen className="h-6 w-6" />
-              <span className="ml-2 text-lg font-bold">ResearchPulse</span>
+              <span className="ml-2 text-lg font-bold">HealthByte</span>
             </Link>
 
             {/* Desktop Navigation */}
