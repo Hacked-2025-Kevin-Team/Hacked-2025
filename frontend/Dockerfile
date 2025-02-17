@@ -23,6 +23,9 @@ WORKDIR /app
 # Copy the built Next.js files from the previous stage
 COPY --from=build /app /app
 
+ARG NEXT_PUBLIC_BASE_URL 
+RUN echo $NEXT_PUBLIC_BASE_URL
+
 # Expose the port that Railway will bind to (use the $PORT environment variable)
 EXPOSE $PORT
 
