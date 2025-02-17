@@ -18,7 +18,7 @@ def fetch_medical_documments(query):
         
     for article in articles_text:
         if article != None:
-            
+            pass        
 
 
 
