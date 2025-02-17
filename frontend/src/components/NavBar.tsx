@@ -15,6 +15,7 @@ const navigation = [
   { name: "About", href: "#" },
   { name: "News", href: "/news" },
 
+  {name: "Article Radio", href:"/Radio"}
 ];
 
 export default function Navbar() {

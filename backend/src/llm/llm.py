@@ -1,7 +1,6 @@
 import os
 import dotenv
 import json
-
 from typing import Annotated
 from typing_extensions import TypedDict
 
@@ -9,14 +8,17 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langchain_core.messages import ToolMessage
 
+#from langchain.agents import create_react_agent
 from langchain_openai import ChatOpenAI
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.checkpoint.memory import MemorySaver
 
-
+from .pm_tools import fetch_pm_document_url
+# Load environment variables
 dotenv.load_dotenv()
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
-TAVILY_KEY = os.getenv("TAVILY_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+SEARCH_ENGINE_ID = os.getenv("GOOGLE_CSE_ID")
 
 
 class State(TypedDict):
@@ -53,15 +55,15 @@ class LLM:
     def __init__(self):
         self.graph_builder = StateGraph(State)
 
-        tool = TavilySearchResults(max_results=2)
-        self.tools = [tool]
+        #tool = TavilySearchResults(max_results=2)
+        self.tools = [fetch_pm_document_url]
         self.llm = ChatOpenAI(model="gpt-4o-mini")
         self.llm_with_tools = self.llm.bind_tools(self.tools)
 
         self.graph_builder.add_node("chatbot", self.chatbot)
         self.graph_builder.add_edge(START, "chatbot")
 
-        self.tool_node = BasicToolNode(tools=[tool])
+        self.tool_node = BasicToolNode(tools=[fetch_pm_document_url])
         self.graph_builder.add_node("tools", self.tool_node)
         self.graph_builder.add_conditional_edges(
             "chatbot", self.route_tools, {"tools": "tools", END: END}
@@ -69,17 +71,25 @@ class LLM:
         self.graph_builder.add_edge("tools", "chatbot")
         self.mem_saver = MemorySaver()
         self.graph = self.graph_builder.compile(checkpointer=self.mem_saver)
-        # self.graph.get_graph().draw_mermaid_png(output_file_path="test.png")
+        self.mem_saver_config = {"configurable": {"thread_id": "def234"}}
+        
 
     def chatbot(self, state: State) -> State:
         return {"messages": [self.llm_with_tools.invoke(state["messages"])]}
 
     def stream_graph_updates(self, user_input: str):
         for event in self.graph.stream(
-            {"messages": [{"role": "user", "content": user_input}]}
+            {
+                "messages": [
+                    {"role": "system", "content": "You are a search engine assistant, whose purpose is to extract the keyword from the user's question. Do not attempt to answer the question. Output the keywords in the question, with AND in between each keyword."},
+                    {"role": "user", "content": user_input}
+                ]
+            },
+            config=self.mem_saver_config,
         ):
             
             for value in event.values():
+                #print(value["messages"][-1].content)
                 yield value["messages"][-1].content
 
     def route_tools(self, state: State):

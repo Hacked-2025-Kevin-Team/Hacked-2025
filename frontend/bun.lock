@@ -9,6 +9,7 @@
         "babel-plugin-react-compiler": "^19.0.0-beta-30d8a17-20250209",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "lightningcss-linux-x64-gnu": "^1.29.1",
         "lucide-react": "^0.475.0",
         "next": "15.1.7",
         "next-auth": "^4.24.11",
