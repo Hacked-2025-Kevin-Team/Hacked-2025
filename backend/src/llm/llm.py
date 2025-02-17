@@ -179,15 +179,24 @@ class LLM:
     def stream_graph_updates(self, user_input: str):
         inputs = {
             "messages": [
-                ("system", "You are a personal health assistant, whose purpose is to use the available tools to provide the user with accurate information, and to answer questions related to healthcare and medicine. Do not answer any off-topic question."),
+                ("system", "You are a personal health assistant..."),
                 ("user", user_input)
             ]
         }
         
         for output in self.graph.stream(input=inputs, config=self.mem_saver_config):
             for key, value in output.items():
-                print(key, value)
-                yield str(value["messages"][0].content)
+                print("Yielding:", key, value)
+                if "messages" in value and value["messages"]:
+                    message = value["messages"][0]
+                    if isinstance(message, BaseMessage):
+                        # Append a newline delimiter after each JSON object.
+                        yield json.dumps({"content": message.content}) + "\n"
+                    else:
+                        yield json.dumps({"content": message}) + "\n"
+
+
+
 
     
 
