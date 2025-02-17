@@ -20,7 +20,7 @@ from fetch_news import fetch_article_pmid, fetch_latest_websites, get_article_da
 # No need to import llm.llm here
 import time
 router = APIRouter()
-app = FastAPI()
+
 
 
 AUDIO_DIR = "./src/audio_files"
