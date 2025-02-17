@@ -17,7 +17,10 @@ from mutagen.mp3 import MP3
 import asyncio
 
 from fetch_news import fetch_article_pmid, fetch_latest_websites, get_article_data
+
+from fetch_news import fetch_article_pmid, fetch_latest_websites, get_article_data
 # No need to import llm.llm here
+import time
 import time
 router = APIRouter()
 
@@ -121,6 +124,7 @@ async def chat_stream(usr_input: str):  # Add app: FastAPI
     Streams chat responses using the shared LLM instance.
     """
     #fetch_medical_documments(usr_input)
+    #fetch_medical_documments(usr_input)
     return StreamingResponse(llm_instance.stream_graph_updates(usr_input))
 
 
@@ -212,3 +216,18 @@ async def play_next_track() -> AsyncGenerator[bytes, None]:
 
         # Wait for the track to finish before switching
         await asyncio.sleep(duration)
+
+
+@router.get("/get_news")
+async def get_news():
+
+    og_website = "https://pubmed.ncbi.nlm.nih.gov"
+
+    start = time.time()
+    data = get_article_data(5)
+
+    data = [{"name": "Latest papers",
+            "papers": data}]
+    end = time.time()
+    print(end - start)
+    return JSONResponse(content = data, status_code=200)
