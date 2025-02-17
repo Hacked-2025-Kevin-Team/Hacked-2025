@@ -13,6 +13,7 @@ const navigation = [
   { name: "Topics", href: "/Topics" },
   { name: "Saved Papers", href: "#" },
   { name: "About", href: "#" },
+  {name: "Article Radio", href:"/Radio"}
 ];
 
 export default function Navbar() {
