@@ -1,14 +1,8 @@
 # Use the official Bun image as the base image
-FROM oven/bun:alpine as build
+FROM oven/bun as build
 
 # Set working directory
 WORKDIR /app
-
-# Install required dependencies including Python, setuptools, and build tools
-RUN apk add --no-cache python3 py3-setuptools make g++
-
-# Ensure python points to python3
-RUN ln -sf /usr/bin/python3 /usr/bin/python
 
 COPY package.json bun.lock ./
 
@@ -21,7 +15,7 @@ RUN rm -rf /tmp/* && bun install --no-cache
 RUN bun next build
 
 # We will use a second stage to keep the final image small
-FROM oven/bun:alpine
+FROM oven/bun
 
 # Set working directory
 WORKDIR /app

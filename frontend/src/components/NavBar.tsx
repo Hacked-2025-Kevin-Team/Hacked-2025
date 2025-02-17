@@ -17,7 +17,7 @@ const navigation = [
 
 export default function Navbar() {
   return (
-    <Disclosure as="nav" className="bg-white shadow">
+    <Disclosure as="nav" className="bg-white shadow-sm">
       {({ open }) => (
         <>
           <div className="px-4 lg:px-6 h-14 flex items-center justify-between">
@@ -42,7 +42,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Button */}
             <div className="sm:hidden">
-              <DisclosureButton className="inline-flex items-center justify-center p-2 text-gray-600 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-200">
+              <DisclosureButton className="inline-flex items-center justify-center p-2 text-gray-600 hover:bg-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-gray-200">
                 {open ? (
                   <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                 ) : (

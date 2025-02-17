@@ -78,8 +78,7 @@ class LLM:
         for event in self.graph.stream(
             {"messages": [{"role": "user", "content": user_input}]}
         ):
-            print(event.values())
-            print(event)
+            
             for value in event.values():
                 yield value["messages"][-1].content
 
