@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import requests
 import json
 from pypdf import PdfReader
+import time
 from generate_tts import *
 
 client = OpenAI()
@@ -70,10 +71,13 @@ class ResearchPaper:
             store = True)
     
     def __init__(self, topic: str):
+        self.topic = topic
         self.thing = search_core(topic, os.environ.get("CORE_API"))
-
+        print(self.thing)
         if (self.thing == -1):
             print ("error with CORE api")
+
+
         self.title = self.thing["results"][0]["title"]
         self.url = self.thing["results"][0]["downloadUrl"]
         self.json_info = json.loads(self.query_gpt(self.thing["results"][0]["fullText"]).choices[0].message.content)
@@ -82,6 +86,6 @@ class ResearchPaper:
         self.insights = self.json_info["insights"]
 
 
-summary = ResearchPaper("math")
-
+summary = ResearchPaper("complex numbers")
+text_to_speech(summary.message, "tts_"+str(int(time.time()))+".mp3")
 print(summary.message)
