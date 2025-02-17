@@ -17,8 +17,6 @@ from .pm_tools import fetch_pm_document_url
 # Load environment variables
 dotenv.load_dotenv()
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-SEARCH_ENGINE_ID = os.getenv("GOOGLE_CSE_ID")
 
 
 class State(TypedDict):
@@ -73,7 +71,7 @@ class LLM:
         self.graph = self.graph_builder.compile(checkpointer=self.mem_saver)
         self.mem_saver_config = {"configurable": {"thread_id": "def234"}}
         
-
+        
     def chatbot(self, state: State) -> State:
         return {"messages": [self.llm_with_tools.invoke(state["messages"])]}
 
@@ -81,7 +79,7 @@ class LLM:
         for event in self.graph.stream(
             {
                 "messages": [
-                    {"role": "system", "content": "You are a search engine assistant, whose purpose is to extract the keyword from the user's question. Do not attempt to answer the question. Output the keywords in the question, with AND in between each keyword."},
+                    {"role": "system", "content": "You are a heathcare search engine assistant, whose purpose is to extract the keyword from the user's question about healthcare. Do not attempt to answer the question. If the question is about any other topic that is not about health, output \'Please only ask question about health.\'. If the question is about health, output the keywords in the question, with AND in between each keyword."},
                     {"role": "user", "content": user_input}
                 ]
             },
