@@ -16,7 +16,7 @@ import asyncio
 
 from fetch_news import fetch_article_pmid, fetch_latest_websites, get_article_data
 # No need to import llm.llm here
-
+import time
 router = APIRouter()
 app = FastAPI()
 
@@ -193,14 +193,11 @@ async def get_news():
 
     og_website = "https://pubmed.ncbi.nlm.nih.gov"
 
+    start = time.time()
+    data = get_article_data(5)
 
-    sites = fetch_latest_websites(og_website)
-    site_dict = fetch_article_pmid(sites)
-
-    data = get_article_data(site_dict)
-
-    print(len(data))
     data = [{"name": "Latest papers",
             "papers": data}]
-
+    end = time.time()
+    print(end - start)
     return JSONResponse(content = data, status_code=200)
