@@ -11,8 +11,8 @@ import { BookOpen } from "lucide-react";
 const navigation = [
   { name: "Home", href: "/" },
   { name: "Topics", href: "/Topics" },
-  { name: "Saved Papers", href: "#" },
-  { name: "About", href: "#" },
+  { name: "News", href: "/news" },
+
   {name: "Article Radio", href:"/Radio"}
   { name: "News", href: "/news" },
 
@@ -27,7 +27,7 @@ export default function Navbar() {
             {/* Logo */}
             <Link className="flex items-center justify-center" href="#">
               <BookOpen className="h-6 w-6" />
-              <span className="ml-2 text-lg font-bold">ResearchPulse</span>
+              <span className="ml-2 text-lg font-bold">HealthByte</span>
             </Link>
 
             {/* Desktop Navigation */}

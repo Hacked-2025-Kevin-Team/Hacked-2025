@@ -11,6 +11,9 @@ COPY . .
 # Clean up temporary files and force bun install without cache
 RUN rm -rf /tmp/* && bun install --no-cache
 
+ARG NEXT_PUBLIC_BASE_URL 
+RUN echo $NEXT_PUBLIC_BASE_URL
+
 # Build the Next.js application for production
 RUN bun next build
 
@@ -22,6 +25,8 @@ WORKDIR /app
 
 # Copy the built Next.js files from the previous stage
 COPY --from=build /app /app
+
+
 
 # Expose the port that Railway will bind to (use the $PORT environment variable)
 EXPOSE $PORT

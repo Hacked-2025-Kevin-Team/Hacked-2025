@@ -1,4 +1,5 @@
 import asyncio
+import json
 from fastapi import APIRouter, FastAPI
 from typing import List, Optional, Dict
 from fastapi.responses import StreamingResponse
@@ -9,18 +10,23 @@ from fastapi import Response
 from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 import os
+from typing import AsyncGenerator
 import random
 import time
 from mutagen.mp3 import MP3
 import asyncio
 
 from fetch_news import fetch_article_pmid, fetch_latest_websites, get_article_data
+
+from fetch_news import fetch_article_pmid, fetch_latest_websites, get_article_data
 # No need to import llm.llm here
 import time
+import time
 router = APIRouter()
-app = FastAPI()
 
-AUDIO_DIR = os.path.abspath("//home/scruggs/Hacked-2025/backend/src/audio_files")
+
+
+AUDIO_DIR = "./src/audio_files"
 current_track = {"title": "", "filename": ""}
 
 from llm.llm import LLM
@@ -118,6 +124,7 @@ async def chat_stream(usr_input: str):  # Add app: FastAPI
     Streams chat responses using the shared LLM instance.
     """
     #fetch_medical_documments(usr_input)
+    #fetch_medical_documments(usr_input)
     return StreamingResponse(llm_instance.stream_graph_updates(usr_input))
 
 
@@ -127,6 +134,22 @@ async def health_check() -> Dict[str, str]:
     Health check endpoint
     """
     return JSONResponse(content={"status": "ok"}, status_code=200)
+
+
+@router.get("/get_news")
+async def get_news():
+
+    og_website = "https://pubmed.ncbi.nlm.nih.gov"
+
+    start = time.time()
+    data = get_article_data(5)
+
+    data = [{"name": "Latest papers",
+            "papers": data}]
+    end = time.time()
+    print(end - start)
+    return JSONResponse(content = data, status_code=200)
+
 async def stream_audio(file_path):
     """ Generator function to stream audio in chunks """
     with open(file_path, "rb") as audio_file:
@@ -136,10 +159,42 @@ async def stream_audio(file_path):
 @router.get("/radio")
 async def radio_stream():
     """ Streams a random MP3 file continuously """
+    return StreamingResponse(play_next_track(), media_type="audio/mpeg")
+
+@router.get("/play/{filename}")
+async def play_audio(filename: str):
+    """ Stream a specific MP3 file """
+    file_path = os.path.join(AUDIO_DIR, filename)
+    if not os.path.exists(file_path):
+        return Response("File not found", status_code=404)
+    return StreamingResponse(stream_audio(file_path), media_type="audio/mpeg")
+
+@router.get("/current-track")
+async def get_current_track():
+    """ Returns the currently playing track """
+    return current_track
+
+@router.get("/track-updates")
+async def track_updates():
+    """ SSE endpoint for real-time track updates """
+    async def event_generator():
+        while True:
+            yield {"event": "update", "data": current_track}
+            await asyncio.sleep(1)
+    return EventSourceResponse(event_generator())
+
+async def broadcast_track_update():
+    """ Notifies frontend about track changes """
+    async def event_generator():
+        yield {"event": "update", "data": current_track}
+    return EventSourceResponse(event_generator())
+
+async def play_next_track() -> AsyncGenerator[bytes, None]:
+    """ Selects a random track and continuously streams it """
     while True:
         files = [f for f in os.listdir(AUDIO_DIR) if f.endswith(".mp3")]
         if not files:
-            return Response("No MP3 files found", status_code=404)
+            break
 
         random_file = random.choice(files)
         file_path = os.path.join(AUDIO_DIR, random_file)
@@ -155,37 +210,12 @@ async def radio_stream():
         # Notify clients about the new track
         await broadcast_track_update()
 
-        # Stream the file
-        return StreamingResponse(stream_audio(file_path), media_type="audio/mpeg")
+        # Stream the audio file using `async for`
+        async for chunk in stream_audio(file_path):
+            yield chunk
 
-@app.get("/play/{filename}")
-async def play_audio(filename: str):
-    """ Stream a specific MP3 file """
-    file_path = os.path.join(AUDIO_DIR, filename)
-    if not os.path.exists(file_path):
-        return Response("File not found", status_code=404)
-    return StreamingResponse(stream_audio(file_path), media_type="audio/mpeg")
-
-@app.get("/current-track")
-async def get_current_track():
-    """ Returns the currently playing track """
-    return current_track
-
-@app.get("/track-updates")
-async def track_updates():
-    """ SSE endpoint for real-time track updates """
-    async def event_generator():
-        while True:
-            yield {"event": "update", "data": current_track}
-            await asyncio.sleep(1)
-    return EventSourceResponse(event_generator())
-
-async def broadcast_track_update():
-    """ Notifies frontend about track changes """
-    async def event_generator():
-        yield {"event": "update", "data": current_track}
-    return EventSourceResponse(event_generator())
-
+        # Wait for the track to finish before switching
+        await asyncio.sleep(duration)
 
 
 @router.get("/get_news")
