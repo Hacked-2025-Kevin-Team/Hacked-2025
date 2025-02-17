@@ -42,6 +42,7 @@ text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
 )
 doc_splits = text_splitter.split_documents(docs_list)
 
+print(doc_splits[0])
 # Add to vectorDB
 vectorstore = Chroma.from_documents(
     documents=doc_splits,

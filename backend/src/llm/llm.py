@@ -2,51 +2,36 @@ import os
 import dotenv
 import json
 from typing import Annotated
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, Sequence, Literal
 
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
+from langchain import hub
+
 from langchain_core.messages import ToolMessage
+from langchain_core.tools import create_retriever_tool
+from langchain_core.messages import BaseMessage, HumanMessage
+from langgraph.prebuilt import ToolNode
 
-#from langchain.agents import create_react_agent
 from langchain_openai import ChatOpenAI
-from langchain_community.tools.tavily_search import TavilySearchResults
-from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.output_parsers import StrOutputParser
 
-from .pm_tools import fetch_pm_document_url
+from langgraph.checkpoint.memory import MemorySaver
+from langchain_core.prompts import PromptTemplate
+from langgraph.prebuilt import tools_condition
+
+from pydantic import BaseModel, Field
+
+
+from .pm_tools import fetch_pm_document_url, vectorstore
 # Load environment variables
 dotenv.load_dotenv()
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 
 
 class State(TypedDict):
-    messages: Annotated[list, add_messages]
+    messages: Annotated[Sequence[BaseMessage], add_messages]
 
-
-class BasicToolNode:
-    """A node that runs the tools requested in the last AIMessage."""
-
-    def __init__(self, tools: list) -> None:
-        self.tools_by_name = {tool.name: tool for tool in tools}
-
-    def __call__(self, inputs: dict):
-        if messages := inputs.get("messages", []):
-            message = messages[-1]
-        else:
-            raise ValueError("No message found in input")
-        outputs = []
-        for tool_call in message.tool_calls:
-            tool_result = self.tools_by_name[tool_call["name"]].invoke(
-                tool_call["args"]
-            )
-            outputs.append(
-                ToolMessage(
-                    content=json.dumps(tool_result),
-                    name=tool_call["name"],
-                    tool_call_id=tool_call["id"],
-                )
-            )
-        return {"messages": outputs}
 
 
 class LLM:
@@ -55,40 +40,145 @@ class LLM:
 
         #tool = TavilySearchResults(max_results=2)
         self.tools = [fetch_pm_document_url]
-        self.llm = ChatOpenAI(model="gpt-4o-mini")
-        self.llm_with_tools = self.llm.bind_tools(self.tools)
-
-        self.graph_builder.add_node("chatbot", self.chatbot)
-        self.graph_builder.add_edge(START, "chatbot")
-
-        self.tool_node = BasicToolNode(tools=[fetch_pm_document_url])
-        self.graph_builder.add_node("tools", self.tool_node)
-        self.graph_builder.add_conditional_edges(
-            "chatbot", self.route_tools, {"tools": "tools", END: END}
+        #self.tools=[]
+        retriever = vectorstore.as_retriever()
+        retriever_tool = create_retriever_tool(
+                            retriever,
+                            "retrieve_medical_research_articles",
+                            "Search and return accurate information from the medical research articles.",
+                        )
+        self.tools.append(
+            retriever_tool
         )
-        self.graph_builder.add_edge("tools", "chatbot")
+        
+        self.workflow = StateGraph(State)
+        self.workflow.add_node("agent", self.agent)
+        retrieve = ToolNode([retriever_tool])
+        self.workflow.add_node("retrieve", retrieve)
+        self.workflow.add_node("generate", self.generate)
+        self.workflow.add_node("rewrite", self.rewrite)
+        
+        self.workflow.add_edge(START, "agent")
+        self.workflow.add_conditional_edges(
+            "agent", tools_condition, {"generate": "generate", "rewrite": "rewrite", END: END}
+        )
+        self.workflow.add_conditional_edges("retrieve", self.grade_documents)
+        
+        self.workflow.add_edge("generate", END)
+        self.workflow.add_edge("rewrite", "agent")
+        
         self.mem_saver = MemorySaver()
-        self.graph = self.graph_builder.compile(checkpointer=self.mem_saver)
+        self.graph = self.workflow.compile(checkpointer=self.mem_saver)
         self.mem_saver_config = {"configurable": {"thread_id": "def234"}}
         
-        
-    def chatbot(self, state: State) -> State:
-        return {"messages": [self.llm_with_tools.invoke(state["messages"])]}
+    def grade_documents(self, state) -> Literal["generate", "rewrite"]:
 
+        # Data model
+        class grade(BaseModel):
+            """Binary score for relevance check."""
+
+            binary_score: str = Field(description="Relevance score 'yes' or 'no'")
+
+        # LLM
+        model = ChatOpenAI(temperature=0, model="gpt-4o", streaming=True)
+
+        # LLM with tool and validation
+        llm_with_tool = model.with_structured_output(grade)
+
+        # Prompt
+        prompt = PromptTemplate(
+            template="""You are a grader assessing relevance of a retrieved document to a user question. \n 
+            Here is the retrieved document: \n\n {context} \n\n
+            Here is the user question: {question} \n
+            If the document contains keyword(s) or semantic meaning related to the user question, grade it as relevant. \n
+            Give a binary score 'yes' or 'no' score to indicate whether the document is relevant to the question.""",
+            input_variables=["context", "question"],
+        )
+
+        # Chain
+        chain = prompt | llm_with_tool
+
+        messages = state["messages"]
+        last_message = messages[-1]
+
+        question = messages[0].content
+        docs = last_message.content
+
+        scored_result = chain.invoke({"question": question, "context": docs})
+
+        score = scored_result.binary_score
+
+        if score == "yes":
+            return "generate"
+
+        else:
+            return "rewrite"
+        
+    
+    def agent(self, state: State):
+        messages = state["messages"]
+        model = ChatOpenAI(temperature=0, streaming=True, model="gpt-4-turbo")
+        model = model.bind_tools(self.tools)
+        response = model.invoke(messages)
+        # We return a list, because this will get added to the existing list
+        return {"messages": [response]}
+    
+    
+    def rewrite(self, state: State):
+
+        print("---TRANSFORM QUERY---")
+        messages = state["messages"]
+        question = messages[0].content
+
+        msg = [
+            HumanMessage(
+                content=f""" \n 
+        Look at the input and try to reason about the underlying semantic intent / meaning. \n 
+        Here is the initial question:
+        \n ------- \n
+        {question} 
+        \n ------- \n
+        Formulate an improved question: """,
+            )
+        ]
+
+        # Grader
+        model = ChatOpenAI(temperature=0, model="gpt-4-0125-preview", streaming=True)
+        response = model.invoke(msg)
+        return {"messages": [response]}
+
+    def generate(self, state):
+        messages = state["messages"]
+        question = messages[0].content
+        last_message = messages[-1]
+
+        docs = last_message.content
+
+        # Prompt
+        prompt = hub.pull("rlm/rag-prompt")
+
+        # LLM
+        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
+
+        # Chain
+        rag_chain = prompt | llm | StrOutputParser()
+
+        # Run
+        response = rag_chain.invoke({"context": docs, "question": question})
+        return {"messages": [response]}
+    
     def stream_graph_updates(self, user_input: str):
-        for event in self.graph.stream(
-            {
-                "messages": [
-                    {"role": "system", "content": "You are a heathcare search engine assistant, whose purpose is to extract the keyword from the user's question about healthcare. Do not attempt to answer the question. If the question is about any other topic that is not about health, output \'Please only ask question about health.\'. If the question is about health, output the keywords in the question, with AND in between each keyword."},
-                    {"role": "user", "content": user_input}
-                ]
-            },
-            config=self.mem_saver_config,
-        ):
-            
-            for value in event.values():
-                #print(value["messages"][-1].content)
-                yield value["messages"][-1].content
+        inputs = {
+            "messages": [
+                ("system", "You are a heathcare search engine assistant, whose purpose is to use the available tools to provide the user with accurate information. Do not answer any question not related to heathcare."),
+                ("user", user_input)
+            ]
+        }
+        
+        for output in self.graph.stream(input=inputs, config=self.mem_saver_config):
+            for key, value in output.items():
+                print(key, value)
+                yield value
 
     def route_tools(self, state: State):
         if isinstance(state, list):
@@ -101,7 +191,7 @@ class LLM:
             return "tools"
         return END
 
-
+"""
 user_input = "What do you know about LangGraph?"
 test = LLM()
-test.stream_graph_updates(user_input)
+test.stream_graph_updates(user_input)"""
