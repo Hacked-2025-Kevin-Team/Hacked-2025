@@ -20,26 +20,23 @@ export const ResearchCard = ({
   url: string;
 }) => {
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-2">
-        <CardTitle className="text-lg line-clamp-2">{title}</CardTitle>
-        <div className="flex flex-wrap gap-1">
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+        <div className="flex flex-wrap gap-1 mt-2">
           {badges.map((badge, index) => (
-            <Badge key={index} className="text-xs">
-              {badge}
-            </Badge>
+            <Badge key={index}>{badge}</Badge>
           ))}
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           {description}
         </p>
       </CardContent>
-      <CardFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between">
+      <CardFooter className="flex justify-between">
         <Button
           variant="outline"
-          className="w-full sm:w-auto text-sm"
           onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
         >
           Read Full Paper
