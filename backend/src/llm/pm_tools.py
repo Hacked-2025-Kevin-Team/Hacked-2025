@@ -17,7 +17,7 @@ vectorstore = Chroma(
         collection_name="rag-chroma",
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
 )
-@tool
+@tool()
 def fetch_pm_document_url(query):
     """Fetch a list of reliable medical research articles based on keywords from the user's question, then store in a vector database for later retrieval."""
     api_key = os.getenv("NCBI_API_KEY")
@@ -29,6 +29,7 @@ def fetch_pm_document_url(query):
     results = fetcher.pmids_for_query(f"{query} AND (Free Full Text[filter])",
                                       api_key=api_key,
                                       retmax="10",
+                                      until="2024"
                                     )
     return_dictionary = {}
     
@@ -66,8 +67,7 @@ def fetch_pm_document_url(query):
     doc_splits = text_splitter.split_documents(pdfs)
     
     vectorstore.add_documents(doc_splits)
-    print("WE COOL HERE")
-    return return_dictionary 
+    return str(return_dictionary)
 
 
 #@tool

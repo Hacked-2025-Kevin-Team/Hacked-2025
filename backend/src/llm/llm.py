@@ -19,7 +19,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.prompts import PromptTemplate
 from langgraph.prebuilt import tools_condition
-
+from langgraph.prebuilt import create_react_agent
 from pydantic import BaseModel, Field
 
 
@@ -53,16 +53,25 @@ class LLM:
         
         self.workflow = StateGraph(State)
         self.workflow.add_node("agent", self.agent)
-        retrieve = ToolNode([retriever_tool])
-        self.workflow.add_node("retrieve", retrieve)
-        self.workflow.add_node("generate", self.generate)
+        search_or_retreieve = ToolNode([fetch_pm_document_url, retriever_tool])
+        
+        
+        #Search then retrieve
+        self.workflow.add_node("search_or_retrieve", search_or_retreieve)
+        #self.workflow.add_node("retrieve", retrieve)
         self.workflow.add_node("rewrite", self.rewrite)
+        self.workflow.add_node("generate", self.generate)
         
         self.workflow.add_edge(START, "agent")
+        
+        
         self.workflow.add_conditional_edges(
-            "agent", tools_condition, {"generate": "generate", "rewrite": "rewrite", END: END}
+            "agent", tools_condition, {"tools":"search_or_retrieve", END: END}
         )
-        self.workflow.add_conditional_edges("retrieve", self.grade_documents)
+        
+        self.workflow.add_conditional_edges("search_or_retrieve", self.grade_documents)
+        #self.workflow.add_edge("search", "agent")
+        
         
         self.workflow.add_edge("generate", END)
         self.workflow.add_edge("rewrite", "agent")
@@ -70,7 +79,7 @@ class LLM:
         self.mem_saver = MemorySaver()
         self.graph = self.workflow.compile(checkpointer=self.mem_saver)
         self.mem_saver_config = {"configurable": {"thread_id": "def234"}}
-        
+        self.graph.get_graph(xray=True).draw_mermaid_png(output_file_path="test.png")
     def grade_documents(self, state) -> Literal["generate", "rewrite"]:
 
         # Data model
@@ -178,18 +187,9 @@ class LLM:
         for output in self.graph.stream(input=inputs, config=self.mem_saver_config):
             for key, value in output.items():
                 print(key, value)
-                yield value
+                yield str(value)
 
-    def route_tools(self, state: State):
-        if isinstance(state, list):
-            ai_message = state[-1]
-        elif messages := state.get("messages", []):
-            ai_message = messages[-1]
-        else:
-            raise ValueError(f"No messages found in input state to tool_edge: {state}")
-        if hasattr(ai_message, "tool_calls") and len(ai_message.tool_calls) > 0:
-            return "tools"
-        return END
+    
 
 """
 user_input = "What do you know about LangGraph?"
