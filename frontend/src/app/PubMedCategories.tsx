@@ -1,9 +1,14 @@
+
+"use client"
+
+import { useState, useEffect } from "react"
 import PaperCard from "../components/PaperCard"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Paper {
   id: string
   title: string
-  abstract: string
+  abstract: string | null
   authors: string[]
   publicationDate: string
   url: string
@@ -16,84 +21,101 @@ interface Category {
 
 async function fetchAndCategorizePapers(): Promise<Category[]> {
   // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 2000))
 
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/get_news`, {
+    cache: "no-store", // Prevents caching in Next.js
+  });
+  const data: Category[] = await response.json();
+
+  
   // In a real-world scenario, you would fetch data from PubMed and use an LLM to categorize here
-  return [
-    {
-      name: "Machine Learning in Healthcare",
-      papers: [
-        {
-          id: "1",
-          title: "Deep Learning for Medical Image Analysis",
-          abstract:
-            "This paper explores the application of deep learning techniques in medical image analysis. We discuss various architectures and their effectiveness in tasks such as tumor detection and classification of radiographic images.",
-          authors: ["John Doe", "Jane Smith"],
-          publicationDate: "2023-05-15",
-          url: "https://example.com/paper1",
-        },
-        {
-          id: "2",
-          title: "AI-Driven Diagnosis of Rare Diseases",
-          abstract:
-            "Artificial intelligence is revolutionizing the diagnosis of rare diseases by analyzing complex patterns in patient data. This study presents a novel approach using ensemble learning to improve accuracy in identifying uncommon genetic disorders.",
-          authors: ["Alice Johnson", "Bob Williams"],
-          publicationDate: "2023-05-20",
-          url: "https://example.com/paper2",
-        },
-        // Add more papers...
-      ],
-    },
-    {
-      name: "Genomics and Personalized Medicine",
-      papers: [
-        {
-          id: "3",
-          title: "Advances in CRISPR Gene Editing for Rare Diseases",
-          abstract:
-            "Recent developments in CRISPR technology show promising results for treating rare genetic disorders. This paper reviews the latest clinical trials and discusses ethical considerations in human gene editing.",
-          authors: ["Emma Brown", "David Lee"],
-          publicationDate: "2023-06-02",
-          url: "https://example.com/paper3",
-        },
-        {
-          id: "4",
-          title: "Pharmacogenomics: Tailoring Treatment to Genetic Profiles",
-          abstract:
-            "This study explores how genetic variations influence individual responses to medications. We present a comprehensive analysis of drug-gene interactions and propose a framework for integrating pharmacogenomic data into clinical decision-making.",
-          authors: ["Grace Chen", "Frank Taylor"],
-          publicationDate: "2023-06-10",
-          url: "https://example.com/paper4",
-        },
-        // Add more papers...
-      ],
-    },
-    // Add more categories...
-  ]
+  return data;
 }
 
-function Section({ category }: { category: Category }) {
+function Section({
+  category,
+  expandedCards,
+  toggleCardExpansion,
+}: {
+  category: Category
+  expandedCards: Record<string, boolean>
+  toggleCardExpansion: (id: string) => void
+}) {
   return (
     <div className="mb-12">
       <h2 className="text-2xl font-bold mb-6">{category.name}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {category.papers.map((paper) => (
-          <PaperCard key={paper.id} paper={paper} />
+          <PaperCard
+            key={paper.id}
+            paper={paper}
+            isExpanded={expandedCards[paper.id] || false}
+            toggleExpansion={() => toggleCardExpansion(paper.id)}
+          />
         ))}
       </div>
     </div>
   )
 }
 
-export default async function PubMedCategories() {
-  const categories = await fetchAndCategorizePapers()
+export default function PubMedCategories() {
+  const [categories, setCategories] = useState<Category[]>([])
+  const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({})
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchAndCategorizePapers()
+      .then((data) => {
+        setCategories(data)
+        setIsLoading(false)
+      })
+      .catch((err) => {
+        console.error("Error fetching data:", err)
+        setError("Failed to load papers. Please try again later.")
+        setIsLoading(false)
+      })
+  }, [])
+
+  const toggleCardExpansion = (id: string) => {
+    setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }))
+  }
+
+  if (isLoading) {
+    return <LoadingSkeleton />
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>
+  }
 
   return (
     <>
       {categories.map((category) => (
-        <Section key={category.name} category={category} />
+        <Section
+          key={category.name}
+          category={category}
+          expandedCards={expandedCards}
+          toggleCardExpansion={toggleCardExpansion}
+        />
       ))}
     </>
   )
 }
 
+function LoadingSkeleton() {
+  return (
+    <>
+      {[1, 2].map((_, categoryIndex) => (
+        <div key={categoryIndex} className="mb-12">
+          <Skeleton className="h-8 w-64 mb-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((_, paperIndex) => (
+              <Skeleton key={paperIndex} className="h-48 w-full" />
+            ))}
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
