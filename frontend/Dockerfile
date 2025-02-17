@@ -1,5 +1,5 @@
 # Use the official Bun image as the base image
-FROM oven/bun:alpine as build
+FROM oven/bun as build
 
 # Set working directory
 WORKDIR /app
@@ -21,7 +21,7 @@ RUN rm -rf /tmp/* && bun install --no-cache
 RUN bun next build
 
 # We will use a second stage to keep the final image small
-FROM oven/bun:alpine
+FROM oven/bun
 
 # Set working directory
 WORKDIR /app
