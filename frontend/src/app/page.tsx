@@ -84,43 +84,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-100 dark:bg-gray-800 items-center flex flex-col">
-          <div className="container px-4 md:px-6 items-center">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-center mb-8">
-              Latest Research Papers
-            </h2>
-            <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3 max-w-6xl mx-auto">
-              <ResearchCard
-                title="Quantum Entanglement in Macroscopic Systems"
-                badges={["Physics"]}
-                description="This groundbreaking paper explores quantum entanglement in macroscopic systems."
-                insights={[
-                  "Entanglement in large systems",
-                  "Applications in quantum computing",
-                ]}
-              />
-              <ResearchCard
-                title="AI-Driven Drug Discovery: A New Frontier"
-                badges={["Computer Science", "Biology"]}
-                description="AI accelerates drug discovery, improving predictions and reducing development time."
-                insights={[
-                  "50% reduction in drug development",
-                  "Revolutionizing personalized medicine",
-                ]}
-              />
-              <ResearchCard
-                title="The Impact of Social Media on Adolescent Mental Health"
-                badges={["Psychology"]}
-                description="Examines the relationship between social media use and mental health in adolescents."
-                insights={[
-                  "Increased anxiety correlation",
-                  "Positive social connection effects",
-                ]}
-                caution="Exercise caution: Small sample size"
-              />
-            </div>
-          </div>
-        </section>
       </main>
     </div>
   );
