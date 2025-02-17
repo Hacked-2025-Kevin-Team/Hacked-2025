@@ -13,6 +13,8 @@ import random
 import time
 from mutagen.mp3 import MP3
 import asyncio
+
+from fetch_news import fetch_article_pmid, fetch_latest_websites, get_article_data
 # No need to import llm.llm here
 
 router = APIRouter()
@@ -185,3 +187,20 @@ async def broadcast_track_update():
     return EventSourceResponse(event_generator())
 
 
+
+@router.get("/get_news")
+async def get_news():
+
+    og_website = "https://pubmed.ncbi.nlm.nih.gov"
+
+
+    sites = fetch_latest_websites(og_website)
+    site_dict = fetch_article_pmid(sites)
+
+    data = get_article_data(site_dict)
+
+    print(len(data))
+    data = [{"name": "Latest papers",
+            "papers": data}]
+
+    return JSONResponse(content = data, status_code=200)
