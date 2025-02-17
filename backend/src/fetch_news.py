@@ -66,26 +66,26 @@ def fetch_article_pmid(latest_paper_sites):
     return latest_paper_sites
 
 
-def get_article_data(latest_paper_sites):
-
+def get_article_data(n):
+    n = min(n, 250)
+    articles = fetch.pmids_for_query('("2025/02/02"[dp] : "2025/02/16"[dp])')[:n]
 
     papers = []
-    for site in latest_paper_sites:
+    for pmid in articles:
+        article = fetch.article_by_pmid(pmid)
+        authors = ", ".join(article.authors)
+        dic = {
+                "id": pmid,
+                "title":article.title,
+                "abstract": article.abstract,
+                "authors": article.authors,
+                "publicationDate": f"{article.year}",
+                "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
+            }
+        papers.append(dic)
 
-        pmid_list = site["pmid_list"]
-        for pmid in pmid_list:
-            article = fetch.article_by_pmid(pmid)
-            authors = ", ".join(article.authors)
-            dic = {
-                    "id": pmid,
-                    "title":article.title,
-                    "abstract": article.abstract,
-                    "authors": article.authors,
-                    "publicationDate": f"{article.year}",
-                    "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/",
-                }
-            papers.append(dic)
     return papers
+
 
 
 #I have a set of abstracts 
