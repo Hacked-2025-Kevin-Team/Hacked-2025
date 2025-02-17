@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
+import { ResearchCard } from "@/components/ResearchCard"; // adjust the import
 // Define a type for tool research items
 type ToolResearchItem = {
   url: string;
@@ -16,17 +16,18 @@ export default function Home() {
   const [toolResearch, setToolResearch] = useState<ToolResearchItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Helper function to check if value looks like tool research message.
-  // In this example we assume it begins and ends with curly braces and contains "http".
+  // Helper to attempt parsing a tool research string into structured data.
   const tryParseToolResearch = (text: string): ToolResearchItem[] | null => {
     const trimmed = text.trim();
-    if (trimmed.startsWith("{") && trimmed.endsWith("}") && trimmed.includes("http")) {
+    if (
+      trimmed.startsWith("{") &&
+      trimmed.endsWith("}") &&
+      trimmed.includes("http")
+    ) {
       try {
-        // Since our Python representation may use single quotes,
-        // we replace them with double quotes.
+        // Replace single quotes with double quotes if necessary.
         const normalized = trimmed.replace(/'/g, '"');
         const parsed = JSON.parse(normalized);
-        // Assume the parsed object has URL as key and description as value.
         const items: ToolResearchItem[] = Object.entries(parsed).map(
           ([url, description]) => ({
             url,
@@ -71,25 +72,18 @@ export default function Home() {
         const { done, value } = await reader.read();
         if (done) break;
 
-        // Decode the new chunk and add it to the buffer.
         buffer += decoder.decode(value, { stream: true });
-        // Split the buffer based on our newline delimiter.
         const lines = buffer.split("\n");
-
-        // The last element may be an incomplete message.
         buffer = lines.pop() || "";
 
         for (const line of lines) {
           if (!line.trim()) continue;
           try {
             const data = JSON.parse(line);
-            // Check if this is a tool research response.
             const toolResult = tryParseToolResearch(data.content);
             if (toolResult) {
-              // Update dedicated tool research state.
               setToolResearch((prev) => [...prev, ...toolResult]);
             } else {
-              // Otherwise, append to the normal chat stream.
               setResponse((prev) => prev + data.content);
             }
           } catch (error) {
@@ -98,7 +92,6 @@ export default function Home() {
         }
       }
 
-      // Process any final pending value from the buffer.
       if (buffer.trim()) {
         try {
           const data = JSON.parse(buffer);
@@ -150,33 +143,27 @@ export default function Home() {
                   </Button>
                 </form>
               </div>
-              {/* Display standard chat responses */}
+              {/* Display normal chat responses */}
               {response && (
-                <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg
-                  w-full max-w-2xl">
+                <div
+                  className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg
+                  w-full max-w-2xl"
+                >
                   <pre className="whitespace-pre-wrap">{response}</pre>
                 </div>
               )}
-              {/* Display tool research responses in a dedicated box */}
+              {/* Display tool research responses using ResearchCard */}
               {toolResearch.length > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900 rounded-lg
-                  w-full max-w-2xl">
-                  <h2 className="text-xl font-bold mb-2">Research Documents</h2>
+                <div className="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                   {toolResearch.map((item, index) => (
-                    <div key={index} className="border p-2 rounded mb-2 bg-white
-                      dark:bg-gray-700">
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline font-medium"
-                      >
-                        {item.url}
-                      </a>
-                      <p className="mt-1 text-gray-700 dark:text-gray-300">
-                        {item.description}
-                      </p>
-                    </div>
+                    <ResearchCard
+                      key={index}
+                      title={`Research Document`}
+                      badges={["Tool Research"]}
+                      description={item.description}
+                      insights={["Click on Read Full Paper to explore further."]}
+                      caution={""}
+                    />
                   ))}
                 </div>
               )}
