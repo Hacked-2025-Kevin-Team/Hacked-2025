@@ -6,7 +6,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookmarkPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const ResearchCard = ({
@@ -44,10 +43,6 @@ export const ResearchCard = ({
           onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
         >
           Read Full Paper
-        </Button>
-        <Button variant="ghost" className="w-full sm:w-auto text-sm">
-          <BookmarkPlus className="mr-2 h-4 w-4" />
-          Save for Later
         </Button>
       </CardFooter>
     </Card>
