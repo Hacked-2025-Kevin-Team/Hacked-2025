@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ResearchCard } from "@/components/ResearchCard";
@@ -21,8 +22,13 @@ export default function Home() {
   const [toolResearch, setToolResearch] = useState<ToolResearchItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // A ref to track the index of the current assistant (placeholder) message.
+  const currentAssistantMsgIndex = useRef<number>(-1);
+
   // Helper to attempt parsing a tool research string into structured data.
-  const tryParseToolResearch = (text: string): ToolResearchItem[] | null => {
+  const tryParseToolResearch = (
+    text: string
+  ): ToolResearchItem[] | null => {
     const trimmed = text.trim();
     if (
       trimmed.startsWith("{") &&
@@ -52,13 +58,28 @@ export default function Home() {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // Add our user prompt as a message.
+    // Append the user's message first.
     setMessages((prev) => [...prev, { role: "user", content: input }]);
     setIsLoading(true);
     setInput("");
-    // We keep a separate state if needed.
     setToolResearch([]);
 
+    // Immediately add a placeholder assistant message.
+    setMessages((prev: any) => {
+      const newMessages = [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "Please give me a moment to research the latest scientific papers...",
+        },
+      ];
+      // Remember the index of the newly added assistant message.
+      currentAssistantMsgIndex.current = newMessages.length - 1;
+      return newMessages;
+    });
+
+    let assistantResponse = "";
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/chat-stream?usr_input=${encodeURIComponent(
@@ -76,7 +97,6 @@ export default function Home() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let assistantResponse = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -116,22 +136,54 @@ export default function Home() {
         }
       }
 
-      // Once complete, add the assistant's response to the messages.
-      if (assistantResponse) {
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: assistantResponse },
-        ]);
+      // Replace "I don't know." with the desired message.
+      if (assistantResponse.trim() === "I don't know.") {
+        assistantResponse =
+          "Here are some research papers relating to your topic";
       }
+
+      // Update the placeholder assistant message with the final response.
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        if (
+          currentAssistantMsgIndex.current !== null &&
+          currentAssistantMsgIndex.current >= 0
+        ) {
+          newMessages[currentAssistantMsgIndex.current] = {
+            role: "assistant",
+            content: assistantResponse,
+          };
+        } else {
+          newMessages.push({
+            role: "assistant",
+            content: assistantResponse,
+          });
+        }
+        return newMessages;
+      });
     } catch (error) {
       console.error("Error fetching stream:", error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "An error occurred while fetching the stream.",
-        },
-      ]);
+      // In case of error, update the placeholder message with an error note.
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        if (
+          currentAssistantMsgIndex.current !== null &&
+          currentAssistantMsgIndex.current >= 0
+        ) {
+          newMessages[currentAssistantMsgIndex.current] = {
+            role: "assistant",
+            content:
+              "An error occurred while fetching the stream.",
+          };
+        } else {
+          newMessages.push({
+            role: "assistant",
+            content:
+              "An error occurred while fetching the stream.",
+          });
+        }
+        return newMessages;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -166,7 +218,9 @@ export default function Home() {
                             : "bg-gray-100 text-left"
                         }`}
                       >
-                        <pre className="whitespace-pre-wrap">{msg.content}</pre>
+                        <pre className="whitespace-pre-wrap">
+                          {msg.content}
+                        </pre>
                       </div>
                     </div>
                   ))}
@@ -189,10 +243,7 @@ export default function Home() {
               </div>
               {/* Chat Input */}
               <div className="w-full max-w-2xl mt-6">
-                <form
-                  className="flex space-x-2"
-                  onSubmit={handleSubmit}
-                >
+                <form className="flex space-x-2" onSubmit={handleSubmit}>
                   <Input
                     className="flex-1"
                     placeholder="Type your message..."
