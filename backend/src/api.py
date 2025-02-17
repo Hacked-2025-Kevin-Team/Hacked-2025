@@ -115,7 +115,7 @@ async def chat_stream(usr_input: str):  # Add app: FastAPI
     """
     Streams chat responses using the shared LLM instance.
     """
-    fetch_medical_documments(usr_input)
+    #fetch_medical_documments(usr_input)
     return StreamingResponse(llm_instance.stream_graph_updates(usr_input))
 
 
