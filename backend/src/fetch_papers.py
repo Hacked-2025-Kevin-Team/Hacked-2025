@@ -80,3 +80,8 @@ class ResearchPaper:
         self.message = self.json_info["summary"]
         self.tags = self.json_info["tags"].split(" ")
         self.insights = self.json_info["insights"]
+
+
+summary = ResearchPaper("math")
+
+print(summary.message)

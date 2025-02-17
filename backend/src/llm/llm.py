@@ -1,7 +1,6 @@
 import os
 import dotenv
 import json
-
 from typing import Annotated
 from typing_extensions import TypedDict
 
@@ -14,10 +13,11 @@ from langchain_openai import ChatOpenAI
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.checkpoint.memory import MemorySaver
 
-
+# Load environment variables
 dotenv.load_dotenv()
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
-TAVILY_KEY = os.getenv("TAVILY_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+SEARCH_ENGINE_ID = os.getenv("GOOGLE_CSE_ID")
 
 
 class State(TypedDict):
@@ -54,7 +54,7 @@ class LLM:
     def __init__(self):
         self.graph_builder = StateGraph(State)
 
-        tool = TavilySearchResults(max_results=2)
+        tool = GoogleSearchResults(GoogleSearchAPIWrapper = GoogleSearchAPIWrapper(google_api_key=GOOGLE_API_KEY, google_cse_id=SEARCH_ENGINE_ID), num_results=4)
         self.tools = [tool]
         self.llm = ChatOpenAI(model="gpt-4o-mini")
         self.llm_with_tools = self.llm.bind_tools(self.tools)
