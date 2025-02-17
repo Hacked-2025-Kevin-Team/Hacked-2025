@@ -19,7 +19,19 @@ export default function RadioPlayer() {
       eventSource.close();
     };
   }, []);
+    const handlePause = () => {
+      if (audioRef.current) {
+          audioRef.current.src = ""; // Disconnect audio stream
+          console.log("Audio paused, stream stopped");
+      }
+    };
 
+  const handlePlay = () => {
+      if (audioRef.current) {
+          audioRef.current.src = "http://localhost:8000/radio"; // Restart stream
+          console.log("Audio resumed, stream restarted");
+      }
+  };
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1">
@@ -48,6 +60,8 @@ export default function RadioPlayer() {
                     controls
                     autoPlay
                     src="http://localhost:8000/radio"
+                    onPause={handlePause} 
+                    onPlay={handlePlay}
                   >
                     Your browser does not support the audio element.
                   </audio>
