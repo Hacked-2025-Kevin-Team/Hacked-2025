@@ -1,7 +1,6 @@
 import os
 import dotenv
 import json
-
 from typing import Annotated
 from typing_extensions import TypedDict
 
@@ -15,10 +14,11 @@ from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.checkpoint.memory import MemorySaver
 
 from .pm_tools import fetch_pm_document_url
-
+# Load environment variables
 dotenv.load_dotenv()
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
-TAVILY_KEY = os.getenv("TAVILY_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+SEARCH_ENGINE_ID = os.getenv("GOOGLE_CSE_ID")
 
 
 class State(TypedDict):
