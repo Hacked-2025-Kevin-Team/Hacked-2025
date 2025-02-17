@@ -1,0 +1,55 @@
+<icecast>
+    <changeowner>
+        <user>icecast</user>
+        <group>icecast</group>
+    </changeowner>
+    
+    <hostname>localhost</hostname>
+    <location>Earth</location>
+    <admin>icemaster@localhost</admin>
+    <fileserve>1</fileserve>
+
+    <listen-socket>
+        <port>8002</port>
+    </listen-socket>
+    
+    <limits>
+        <clients>100</clients>
+        <sources>2</sources>
+    </limits>
+
+    <authentication>
+        <admin-user>admin</admin-user>
+        <admin-password>adminpass</admin-password>
+        <source-password>MySecurePass123</source-password>
+        <relay-password>relaypass</relay-password>
+    </authentication>
+
+
+    <mount>
+        <mount-name>/radio.mp3</mount-name>
+        <username>source</username>
+        <password>MySecurePass123</password>
+        <max-listeners>50</max-listeners>
+        <bitrate>128</bitrate>
+        <type>audio/mpeg</type>
+    </mount>
+
+    <paths>
+        <basedir>./</basedir>
+        <logdir>./logs</logdir>
+        <pidfile>./icecast.pid</pidfile>
+        <webroot>./web</webroot>
+        <adminroot>./admin</adminroot>
+
+        <alias source="/foo" dest="/bar"/>
+    </paths>
+
+    <logging>
+        <accesslog>access.log</accesslog>
+        <errorlog>error.log</errorlog>
+        <playlistlog>playlist.log</playlistlog>
+        <loglevel>3</loglevel> <!-- 1=error, 2=warn, 3=info, 4=debug -->
+    </logging>
+
+</icecast>
