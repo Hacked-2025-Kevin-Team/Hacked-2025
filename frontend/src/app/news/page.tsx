@@ -1,6 +1,6 @@
-import { Suspense } from "react"
-import PubMedCategories from "../PubMedCategories"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Suspense } from "react";
+import PubMedCategories from "../PubMedCategories";
+// import { Skeleton } from "@/components/ui/skeleton"
 
 export default function Home() {
   return (
@@ -10,7 +10,7 @@ export default function Home() {
         <PubMedCategories />
       </Suspense>
     </main>
-  )
+  );
 }
 
 function LoadingSkeleton() {
@@ -18,15 +18,14 @@ function LoadingSkeleton() {
     <>
       {[1, 2].map((_, categoryIndex) => (
         <div key={categoryIndex} className="mb-12">
-          <Skeleton className="h-8 w-64 mb-6" />
+          {/* <Skeleton className="h-8 w-64 mb-6" /> */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((_, paperIndex) => (
+            {/* {[1, 2, 3, 4].map((_, paperIndex) => (
               <Skeleton key={paperIndex} className="h-48 w-full" />
-            ))}
+            ))} */}
           </div>
         </div>
       ))}
     </>
-  )
+  );
 }
-
