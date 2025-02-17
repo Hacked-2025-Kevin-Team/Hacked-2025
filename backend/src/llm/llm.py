@@ -67,8 +67,8 @@ class LLM:
             "chatbot", self.route_tools, {"tools": "tools", END: END}
         )
         self.graph_builder.add_edge("tools", "chatbot")
-
-        self.graph = self.graph_builder.compile()
+        self.mem_saver = MemorySaver()
+        self.graph = self.graph_builder.compile(checkpointer=self.mem_saver)
         # self.graph.get_graph().draw_mermaid_png(output_file_path="test.png")
 
     def chatbot(self, state: State) -> State:
