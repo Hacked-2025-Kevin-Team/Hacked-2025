@@ -9,7 +9,7 @@ COPY package.json bun.lock ./
 COPY . .
 
 # Clean up temporary files and force bun install without cache
-RUN rm -rf /tmp/* && bun install --no-cache
+RUN rm -rf /tmp/* && bun install --frozen-lockfile --no-cache
 
 ARG NEXT_PUBLIC_BASE_URL 
 RUN echo $NEXT_PUBLIC_BASE_URL

@@ -4,7 +4,8 @@ FROM python:3.11
 WORKDIR /app
 
 # Install Poetry
-RUN pip install --no-cache-dir poetry
+RUN python -m pip install --no-cache-dir --upgrade "pip>=26.2.2" \
+    && python -m pip install --no-cache-dir poetry
 
 # Copy project files
 COPY pyproject.toml poetry.lock ./

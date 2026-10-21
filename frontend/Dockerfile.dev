@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json bun.lock* ./
 
 # Install dependencies (preserve Bun's speed)
-RUN bun install --no-cache
+RUN bun install --frozen-lockfile --no-cache
 
 # Copy source code (will be overridden by compose volume)
 COPY . .
